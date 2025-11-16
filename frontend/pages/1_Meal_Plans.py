@@ -56,7 +56,7 @@ try:
             # Display meals day by day
             for plan_date in sorted(plans_by_date.keys()):
                 is_today = plan_date == str(date.today())
-                date_label = "📍 TODAY" if is_today else plan_date
+                date_label = f"TODAY ({plan_date})" if is_today else plan_date
 
                 with st.expander(f"**{date_label}**", expanded=is_today):
                     daily_plans = plans_by_date[plan_date]
