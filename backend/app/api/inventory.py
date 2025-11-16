@@ -24,7 +24,18 @@ def get_users(db: Session = Depends(get_db)):
 
 @router.get("/{user_id}", response_model=InventoryItem)
 def get_user(user_id: int, db: Session = Depends(get_db)):
-    user = db.query(InventoryModel).filter(InventoryModel.id == user_id).first()
+    user = db.query(InventoryModel).filter(
+        InventoryModel.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="InventoryItem not found")
     return user
+
+
+@router.delete("/{id}")
+def delete_inventory_item(id: int, db: Session = Depends(get_db)):
+    item = db.query(InventoryModel).filter(InventoryModel.id == id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="InventoryItem not found")
+    db.delete(item)
+    db.commit()
+    return {"detail": "InventoryItem deleted successfully"}
