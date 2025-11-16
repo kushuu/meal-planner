@@ -1,0 +1,12 @@
+db_user: "mealplanner"
+db_password: "mealplanner"
+db_name: "mealplanner"
+db_host: "localhost"
+db_port: 5432
+ollama_host: "http://localhost:11434"
+ollama_model: "gpt-oss"
+api_title: "Agentic Meal Planner API"
+api_version: "1.0.0"
+use_ollama: false
+openai_base_url: "https://integrate.api.nvidia.com/v1"
+nvidia_nim_model: "google/gemma-2-2b-it"
