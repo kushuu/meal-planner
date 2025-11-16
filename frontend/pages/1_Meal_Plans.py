@@ -1,10 +1,7 @@
 import streamlit as st
-import httpx
+import requests
 from datetime import date, timedelta
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 
@@ -15,7 +12,7 @@ if 'selected_user' not in st.session_state or not st.session_state.selected_user
     st.warning("Please select a user from the home page first!")
     st.stop()
 
-st.title(f"📅 Meal Plans for {st.session_state.selected_user['name'].title()}")
+
 user = st.session_state.selected_user
 
 # Date range selector
@@ -33,7 +30,7 @@ st.divider()
 
 # Fetch meal plans
 try:
-    response = httpx.get(
+    response = requests.get(
         f"{API_BASE_URL}/api/meal-plans/user/{user['id']}",
         params={
             "start_date": str(start_date),
@@ -61,6 +58,28 @@ try:
                 with st.expander(f"**{date_label}**", expanded=is_today):
                     daily_plans = plans_by_date[plan_date]
 
+                    if st.button(f"Delete Entire Day", key=f"delete_day_{plan_date}",
+                                 type="primary", width="stretch", icon="🗑️"):
+                        try:
+                            # Delete all meal plans for this date
+                            deleted_count = 0
+                            for plan in daily_plans:
+                                response = requests.delete(
+                                    f"{API_BASE_URL}/api/meal-plans/{plan['id']}")
+                                if response.status_code == 200:
+                                    deleted_count += 1
+
+                            if deleted_count > 0:
+                                st.success(
+                                    f"Deleted {deleted_count} meal(s) for {plan_date}! ✅")
+                                st.rerun()
+                            else:
+                                st.error("Failed to delete meals")
+                        except Exception as e:
+                            st.error(f"Error: {e}")
+
+                    st.divider()
+
                     cols = st.columns(3)
                     for idx, plan in enumerate(sorted(daily_plans, key=lambda x: ['breakfast', 'lunch', 'dinner'].index(x['meal_type']))):
                         with cols[idx]:
@@ -73,14 +92,14 @@ try:
                             if plan['eaten_outside']:
                                 st.warning("🏪 Eaten Outside")
                                 if st.button(f"Mark as Home Cooked", key=f"home_{plan['id']}"):
-                                    httpx.patch(
+                                    requests.patch(
                                         f"{API_BASE_URL}/api/meal-plans/{plan['id']}/eaten-outside",
                                         params={"eaten_outside": False}
                                     )
                                     st.rerun()
                             elif plan['meal_id']:
                                 # Fetch meal details
-                                meal_response = httpx.get(
+                                meal_response = requests.get(
                                     f"{API_BASE_URL}/api/meals/{plan['meal_id']}")
                                 if meal_response.status_code == 200:
                                     meal = meal_response.json()
@@ -109,7 +128,7 @@ try:
 
                                     # Mark as eaten outside
                                     if st.button(f"Mark as Eaten Outside", key=f"outside_{plan['id']}"):
-                                        httpx.patch(
+                                        requests.patch(
                                             f"{API_BASE_URL}/api/meal-plans/{plan['id']}/eaten-outside",
                                             params={"eaten_outside": True}
                                         )
@@ -136,10 +155,9 @@ with gen_col2:
     if st.button("🎲 Generate", use_container_width=True):
         with st.spinner("Generating meals... This may take a minute."):
             try:
-                response = httpx.post(
+                response = requests.post(
                     f"{API_BASE_URL}/api/meal-plans/generate/{user['id']}",
-                    params={"target_date": str(gen_date)},
-                    timeout=300
+                    params={"target_date": str(gen_date)}
                 )
                 if response.status_code == 200:
                     st.success("✅ Meals generated!")
