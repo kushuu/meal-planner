@@ -57,3 +57,15 @@ def mark_eaten_outside(plan_id: int, eaten_outside: bool, db: Session = Depends(
     db.commit()
     db.refresh(plan)
     return plan
+
+
+@router.delete("/{id}")
+def delete_meal_plan(id: int, db: Session = Depends(get_db)):
+    """Delete a meal plan by ID"""
+    plan = db.query(MealPlanModel).filter(MealPlanModel.id == id).first()
+    if not plan:
+        raise HTTPException(status_code=404, detail="Meal plan not found")
+
+    db.delete(plan)
+    db.commit()
+    return {"message": "Meal plan deleted"}
