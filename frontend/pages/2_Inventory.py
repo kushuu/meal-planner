@@ -49,7 +49,7 @@ try:
 
     if response.status_code == 200:
         items = response.json()
-        num_cols = 3
+        num_cols = 4
 
         if not items:
             st.info("Your inventory is empty. Add some items to get started!")

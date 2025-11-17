@@ -85,6 +85,9 @@ class LLMService:
             previous_meals) if previous_meals else "None"
         ingredients_str = ", ".join(
             available_ingredients) if available_ingredients else "any common ingredients"
+        print("Building prompt for meal type:", meal_type)
+        print("Previous meals to avoid:", prev_meals_str)
+        print("Ingredients available:", ingredients_str)
 
         prompt = f"""Create a {meal_type} meal plan with the following requirements:
 
@@ -92,6 +95,8 @@ Diet: {diet_type}
 Target: High protein ({protein_target}g) and high fiber ({fiber_target}g)
 Previous meals to avoid repetition: {prev_meals_str}
 Available ingredients to prioritize: {ingredients_str}
+Do not use any ingredients not listed as available and do not use all the ingredients in one meal.
+Return the actual values of protein, fiber, calories, etc. Do not return estimates or placeholder values.
 
 Return ONLY a JSON object with this exact structure:
 {{
