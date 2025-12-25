@@ -19,7 +19,6 @@ st.sidebar.title("Meal Planner")
 if 'users' not in st.session_state:
     try:
         response = requests.get(f"{API_BASE_URL}/api/users")
-        print('Got response from /api/users:', response.status_code)
         st.session_state.users = response.json() if response.status_code == 200 else []
     except:
         st.session_state.users = []
