@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
-from app.api import meals, inventory, meal_plans, users
+from app.api import meals, inventory, meal_plans, users, accessories
 
 settings = get_settings()
 
@@ -26,6 +26,8 @@ app.include_router(
     inventory.router, prefix="/api/inventory", tags=["inventory"])
 app.include_router(meal_plans.router,
                    prefix="/api/meal-plans", tags=["meal-plans"])
+app.include_router(accessories.router,
+                   prefix="/api/accessories", tags=["accessories"])
 
 
 @app.get("/")
