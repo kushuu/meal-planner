@@ -97,6 +97,7 @@ Previous meals to avoid repetition: {prev_meals_str}
 Available ingredients to prioritize: {ingredients_str}
 Do not use any ingredients not listed as available and do not use all the ingredients in one meal.
 Return the actual values of protein, fiber, calories, etc. Do not return estimates or placeholder values.
+The meal should be for an Indian household.
 
 Return ONLY a JSON object with this exact structure:
 {{
