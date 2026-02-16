@@ -5,10 +5,7 @@ from app.api import meals, inventory, meal_plans, users, accessories
 
 settings = get_settings()
 
-app = FastAPI(
-    title=settings['api_title'],
-    version=settings['api_version']
-)
+app = FastAPI(title=settings["api_title"], version=settings["api_version"])
 
 # CORS middleware for Streamlit
 app.add_middleware(
@@ -22,17 +19,14 @@ app.add_middleware(
 # Include routers
 app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(meals.router, prefix="/api/meals", tags=["meals"])
-app.include_router(
-    inventory.router, prefix="/api/inventory", tags=["inventory"])
-app.include_router(meal_plans.router,
-                   prefix="/api/meal-plans", tags=["meal-plans"])
-app.include_router(accessories.router,
-                   prefix="/api/accessories", tags=["accessories"])
+app.include_router(inventory.router, prefix="/api/inventory", tags=["inventory"])
+app.include_router(meal_plans.router, prefix="/api/meal-plans", tags=["meal-plans"])
+app.include_router(accessories.router, prefix="/api/accessories", tags=["accessories"])
 
 
 @app.get("/")
 def root():
-    return {"message": "Meal Planner API", "version": settings['api_version']}
+    return {"message": "Meal Planner API", "version": settings["api_version"]}
 
 
 @app.get("/health")

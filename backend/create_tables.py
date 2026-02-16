@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from app.database import engine, Base
 from app.models import User, Meal, InventoryItem, MealPlan, AccessoryItem
 
+
 def create_tables():
     """Create all tables in the database."""
     print("🚀 Creating database tables...")

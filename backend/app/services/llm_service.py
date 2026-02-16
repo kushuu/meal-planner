@@ -1,11 +1,12 @@
-import re
-from openai import OpenAI
-import os
-import ollama
 import json
+import os
+import re
 from typing import Dict, List
+
+import ollama
 from app.config import get_settings
 from dotenv import load_dotenv
+from openai import OpenAI
 
 settings = get_settings()
 load_dotenv()
@@ -13,14 +14,13 @@ load_dotenv()
 
 class LLMService:
     def __init__(self):
-        self.ollama_client = ollama.Client(host=settings['ollama_host'])
+        self.ollama_client = ollama.Client(host=settings["ollama_host"])
         self.openai_client = OpenAI(
-            api_key=os.getenv('NVIDIA_API_KEY'),
-            base_url=settings['openai_base_url']
+            api_key=os.getenv("NVIDIA_API_KEY"), base_url=settings["openai_base_url"]
         )
-        self.model = settings['ollama_model']
-        self.use_ollama = settings['use_ollama']
-        self.nvidia_nim_model = settings['nvidia_nim_model']
+        self.model = settings["ollama_model"]
+        self.use_ollama = settings["use_ollama"]
+        self.nvidia_nim_model = settings["nvidia_nim_model"]
 
     async def generate_meal(
         self,
@@ -29,7 +29,7 @@ class LLMService:
         fiber_target: int,
         previous_meals: List[str],
         available_ingredients: List[str],
-        meal_type: str = "dinner"
+        meal_type: str = "dinner",
     ) -> Dict:
         """
         Generate a meal suggestion using Ollama LLM
@@ -42,16 +42,14 @@ class LLMService:
             fiber_target,
             previous_meals,
             available_ingredients,
-            meal_type
+            meal_type,
         )
 
         try:
             print("Generating meal for meal type:", meal_type)
             if self.use_ollama:
                 response = self.ollama_client.generate(
-                    model=self.model,
-                    prompt=prompt,
-                    format="json"
+                    model=self.model, prompt=prompt, format="json"
                 )
                 meal_data = json.loads(response)
             else:
@@ -59,16 +57,20 @@ class LLMService:
                     model=self.nvidia_nim_model,
                     messages=[{"role": "user", "content": prompt}],
                     temperature=0.7,
-                    max_tokens=1000,
-                    stream=False
+                    max_tokens=1200,
+                    stream=False,
                 )
 
-                json_content = re.search(r'```json(.*?)```', response.choices[0].message.content, re.DOTALL)
+                json_content = re.search(
+                    r"```json(.*?)```", response.choices[0].message.content, re.DOTALL
+                )
                 meal_data = json.loads(json_content.group(1))
             return meal_data
 
         except Exception as e:
-            print(f"Error generating meal: {e}.\nWas building the meal plan for {meal_type}.")
+            print(
+                f"Error generating meal: {e}.\nWas building the meal plan for {meal_type}."
+            )
             return self._get_fallback_meal(is_vegetarian, meal_type)
 
     def _build_meal_prompt(
@@ -78,13 +80,15 @@ class LLMService:
         fiber_target: int,
         previous_meals: List[str],
         available_ingredients: List[str],
-        meal_type: str
+        meal_type: str,
     ) -> str:
         diet_type = "vegetarian (no meat, fish, or eggs)" if is_vegetarian else "any"
-        prev_meals_str = ", ".join(
-            previous_meals) if previous_meals else "None"
-        ingredients_str = ", ".join(
-            available_ingredients) if available_ingredients else "any common ingredients"
+        prev_meals_str = ", ".join(previous_meals) if previous_meals else "None"
+        ingredients_str = (
+            ", ".join(available_ingredients)
+            if available_ingredients
+            else "any common ingredients"
+        )
         print("Building prompt for meal type:", meal_type)
         print("Previous meals to avoid:", prev_meals_str)
         print("Ingredients available:", ingredients_str)
@@ -95,9 +99,11 @@ Diet: {diet_type}
 Target: High protein ({protein_target}g) and high fiber ({fiber_target}g)
 Previous meals to avoid repetition: {prev_meals_str}
 Available ingredients to prioritize: {ingredients_str}
-Do not use any ingredients not listed as available and do not use all the ingredients in one meal.
-Return the actual values of protein, fiber, calories, etc. Do not return estimates or placeholder values.
-The meal should be for an Indian household.
+
+IMPORTANT:
+- Do not use any ingredients not listed as available and use as less ingredients as possiblie in one meal.
+- Return the actual values of protein, fiber, calories, etc. Do not return estimates or placeholder values.
+- The meal should be for an Indian household.
 
 Return ONLY a JSON object with this exact structure:
 {{
@@ -139,10 +145,10 @@ Make it nutritious, varied, and delicious. Ensure protein and fiber targets are 
                     {"name": "quinoa", "quantity": "1", "unit": "cup"},
                     {"name": "chickpeas", "quantity": "150", "unit": "g"},
                     {"name": "spinach", "quantity": "2", "unit": "cups"},
-                    {"name": "avocado", "quantity": "0.5", "unit": "whole"}
+                    {"name": "avocado", "quantity": "0.5", "unit": "whole"},
                 ],
                 "instructions": "Cook quinoa, roast chickpeas, assemble with fresh veggies",
-                "prep_time_minutes": 25
+                "prep_time_minutes": 25,
             }
         else:
             return {
@@ -158,8 +164,8 @@ Make it nutritious, varied, and delicious. Ensure protein and fiber targets are 
                 "ingredients": [
                     {"name": "chicken breast", "quantity": "200", "unit": "g"},
                     {"name": "broccoli", "quantity": "1", "unit": "cup"},
-                    {"name": "sweet potato", "quantity": "1", "unit": "medium"}
+                    {"name": "sweet potato", "quantity": "1", "unit": "medium"},
                 ],
                 "instructions": "Grill chicken, steam vegetables, serve together",
-                "prep_time_minutes": 30
+                "prep_time_minutes": 30,
             }

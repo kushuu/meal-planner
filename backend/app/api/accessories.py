@@ -24,8 +24,9 @@ def get_accessories(db: Session = Depends(get_db)):
 
 @router.get("/{accessory_id}", response_model=Accessory)
 def get_accessory(accessory_id: int, db: Session = Depends(get_db)):
-    accessory = db.query(AccessoryModel).filter(
-        AccessoryModel.id == accessory_id).first()
+    accessory = (
+        db.query(AccessoryModel).filter(AccessoryModel.id == accessory_id).first()
+    )
     if not accessory:
         raise HTTPException(status_code=404, detail="Accessory not found")
     return accessory
@@ -33,8 +34,7 @@ def get_accessory(accessory_id: int, db: Session = Depends(get_db)):
 
 @router.delete("/{id}")
 def delete_accessory(id: int, db: Session = Depends(get_db)):
-    accessory = db.query(AccessoryModel).filter(
-        AccessoryModel.id == id).first()
+    accessory = db.query(AccessoryModel).filter(AccessoryModel.id == id).first()
     if not accessory:
         raise HTTPException(status_code=404, detail="Accessory not found")
     db.delete(accessory)

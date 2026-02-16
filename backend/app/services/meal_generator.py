@@ -1,12 +1,13 @@
 from datetime import date, timedelta
 from typing import List
-from sqlalchemy.orm import Session
+
+from app.models.inventory import InventoryItem
 from app.models.meal import Meal
 from app.models.meal_plan import MealPlan
 from app.models.user import User
-from app.models.inventory import InventoryItem
-from app.services.llm_service import LLMService
 from app.schemas.meal import MealCreate
+from app.services.llm_service import LLMService
+from sqlalchemy.orm import Session
 
 
 class MealGeneratorService:
@@ -34,7 +35,7 @@ class MealGeneratorService:
                 fiber_target=user.fiber_target,
                 previous_meals=previous_meals,
                 available_ingredients=available_ingredients,
-                meal_type=meal_type
+                meal_type=meal_type,
             )
 
             # Create or get existing meal
@@ -46,7 +47,7 @@ class MealGeneratorService:
                 date=target_date,
                 meal_type=meal_type,
                 meal_id=meal.id,
-                eaten_outside=False
+                eaten_outside=False,
             )
             self.db.add(meal_plan)
             meal_plans.append(meal_plan)
@@ -67,8 +68,7 @@ class MealGeneratorService:
         )
 
         meal_ids = [plan.meal_id for plan in recent_plans]
-        meals: List[Meal] = self.db.query(
-            Meal).filter(Meal.id.in_(meal_ids)).all()
+        meals: List[Meal] = self.db.query(Meal).filter(Meal.id.in_(meal_ids)).all()
 
         return [meal.name for meal in meals]
 
@@ -79,11 +79,7 @@ class MealGeneratorService:
 
     def _create_or_get_meal(self, meal_data: dict) -> Meal:
         """Create a new meal or return existing one with same name"""
-        existing = (
-            self.db.query(Meal)
-            .filter(Meal.name == meal_data["name"])
-            .first()
-        )
+        existing = self.db.query(Meal).filter(Meal.name == meal_data["name"]).first()
 
         if existing:
             return existing
