@@ -8,7 +8,9 @@ st.set_page_config(page_title="Inventory", page_icon="🛒", layout="wide")
 
 st.title("Inventory Management")
 
-st.info("Track your available ingredients. The meal generator will prioritize using these items.")
+st.info(
+    "Track your available ingredients. The meal generator will prioritize using these items."
+)
 
 _, col_center, _ = st.columns([1, 2, 1])
 
@@ -16,10 +18,10 @@ with col_center:
     with st.form("add_item", clear_on_submit=True):
         st.subheader("Add Item")
         new_item = st.text_input(
-            "Item name", placeholder="e.g., tomatoes, chicken, quinoa")
+            "Item name", placeholder="e.g., tomatoes, chicken, quinoa"
+        )
         quantity = st.number_input("Quantity", min_value=0, step=1)
-        unit = st.text_input(
-            "Unit (optional)", placeholder="e.g., grams, pieces, cups")
+        unit = st.text_input("Unit (optional)", placeholder="e.g., grams, pieces, cups")
         submit = st.form_submit_button("Add", use_container_width=True)
 
     if quantity <= 0 and submit:
@@ -29,7 +31,7 @@ with col_center:
         try:
             response = requests.post(
                 f"{API_BASE_URL}/api/inventory",
-                json={"item_name": new_item.lower().strip()}
+                json={"item_name": new_item.lower().strip()},
             )
             if response.status_code == 200:
                 st.success(f"✅ Added {new_item}")
@@ -65,7 +67,8 @@ try:
                         with col_b:
                             if st.button("🗑️", key=f"del_{item['id']}", help="Delete"):
                                 requests.delete(
-                                    f"{API_BASE_URL}/api/inventory/{item['id']}")
+                                    f"{API_BASE_URL}/api/inventory/{item['id']}"
+                                )
                                 st.rerun()
 
             st.divider()

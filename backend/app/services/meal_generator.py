@@ -15,7 +15,9 @@ class MealGeneratorService:
         self.db = db
         self.llm_service = LLMService()
 
-    async def generate_daily_meals(self, user_id: int, target_date: date):
+    async def generate_daily_meals(
+        self, user_id: int, target_date: date, special_requirements: str = ""
+    ) -> List[MealPlan]:
         """Generate breakfast, lunch, and dinner for a user on a specific date"""
         user = self.db.query(User).filter(User.id == user_id).first()
         if not user:
@@ -36,6 +38,7 @@ class MealGeneratorService:
                 previous_meals=previous_meals,
                 available_ingredients=available_ingredients,
                 meal_type=meal_type,
+                special_requirements=special_requirements,
             )
 
             # Create or get existing meal

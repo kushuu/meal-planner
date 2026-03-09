@@ -30,6 +30,7 @@ class LLMService:
         previous_meals: List[str],
         available_ingredients: List[str],
         meal_type: str = "dinner",
+        special_requirements: str = "",
     ) -> Dict:
         """
         Generate a meal suggestion using Ollama LLM
@@ -43,6 +44,7 @@ class LLMService:
             previous_meals,
             available_ingredients,
             meal_type,
+            special_requirements,
         )
 
         try:
@@ -81,6 +83,7 @@ class LLMService:
         previous_meals: List[str],
         available_ingredients: List[str],
         meal_type: str,
+        special_requirements: str,
     ) -> str:
         diet_type = "vegetarian (no meat, fish, or eggs)" if is_vegetarian else "any"
         prev_meals_str = ", ".join(previous_meals) if previous_meals else "None"
@@ -104,6 +107,7 @@ IMPORTANT:
 - Do not use any ingredients not listed as available and use as less ingredients as possiblie in one meal.
 - Return the actual values of protein, fiber, calories, etc. Do not return estimates or placeholder values.
 - The meal should be for an Indian household.
+- If there are any special requirements, please consider them while generating the meal plan. Special requirements: {special_requirements}
 
 Return ONLY a JSON object with this exact structure:
 {{
