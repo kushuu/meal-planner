@@ -12,9 +12,7 @@ router = APIRouter()
 
 @router.post("/generate/{user_id}")
 async def generate_meal_plan(
-    user_id: int,
-    target_date: date,
-    db: Session = Depends(get_db)
+    user_id: int, target_date: date, db: Session = Depends(get_db)
 ):
     """Generate daily meal plan for a user"""
     generator = MealGeneratorService(db)
@@ -24,16 +22,12 @@ async def generate_meal_plan(
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Error generating meals: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error generating meals: {str(e)}")
 
 
 @router.get("/user/{user_id}", response_model=List[MealPlan])
 def get_user_meal_plans(
-    user_id: int,
-    start_date: date,
-    end_date: date,
-    db: Session = Depends(get_db)
+    user_id: int, start_date: date, end_date: date, db: Session = Depends(get_db)
 ):
     """Get meal plans for a user within date range"""
     plans = (
@@ -47,7 +41,9 @@ def get_user_meal_plans(
 
 
 @router.patch("/{plan_id}/eaten-outside", response_model=MealPlan)
-def mark_eaten_outside(plan_id: int, eaten_outside: bool, db: Session = Depends(get_db)):
+def mark_eaten_outside(
+    plan_id: int, eaten_outside: bool, db: Session = Depends(get_db)
+):
     """Toggle eaten outside flag"""
     plan = db.query(MealPlanModel).filter(MealPlanModel.id == plan_id).first()
     if not plan:

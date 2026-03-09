@@ -1,29 +1,31 @@
-import streamlit as st
-import requests
-from datetime import date, timedelta
 import os
+from datetime import date, timedelta
+
+import requests
+import streamlit as st
 
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 
 st.set_page_config(page_title="Meal Plans", page_icon="📅", layout="wide")
 
 
-if 'selected_user' not in st.session_state or not st.session_state.selected_user:
+if "selected_user" not in st.session_state or not st.session_state.selected_user:
     try:
         response = requests.get(f"{API_BASE_URL}/api/users")
-        print('Got response from /api/users:', response.status_code)
+        print("Got response from /api/users:", response.status_code)
         st.session_state.users = response.json() if response.status_code == 200 else []
     except:
         st.session_state.users = []
 
-if 'selected_user' not in st.session_state:
+if "selected_user" not in st.session_state:
     st.session_state.selected_user = None
 
 if st.session_state.users:
-    user_names = [u['name'] for u in st.session_state.users]
+    user_names = [u["name"] for u in st.session_state.users]
     selected_name = st.selectbox("Select User", user_names)
     st.session_state.selected_user = next(
-        u for u in st.session_state.users if u['name'] == selected_name)
+        u for u in st.session_state.users if u["name"] == selected_name
+    )
 else:
     st.warning("No users found. Create users on the home page first!")
 
@@ -45,10 +47,7 @@ st.divider()
 try:
     response = requests.get(
         f"{API_BASE_URL}/api/meal-plans/user/{user['id']}",
-        params={
-            "start_date": str(start_date),
-            "end_date": str(end_date)
-        }
+        params={"start_date": str(start_date), "end_date": str(end_date)},
     )
 
     if response.status_code == 200:
@@ -58,9 +57,10 @@ try:
             st.info("No meal plans found for this date range. Generate some meals!")
         else:
             from collections import defaultdict
+
             plans_by_date = defaultdict(list)
             for plan in meal_plans:
-                plans_by_date[plan['date']].append(plan)
+                plans_by_date[plan["date"]].append(plan)
 
             for plan_date in sorted(plans_by_date.keys()):
                 is_today = plan_date == str(date.today())
@@ -69,19 +69,26 @@ try:
                 with st.expander(f"**{date_label}**", expanded=is_today):
                     daily_plans = plans_by_date[plan_date]
 
-                    if st.button(f"Delete Entire Day", key=f"delete_day_{plan_date}",
-                                 type="primary", width="stretch", icon="🗑️"):
+                    if st.button(
+                        f"Delete Entire Day",
+                        key=f"delete_day_{plan_date}",
+                        type="primary",
+                        width="stretch",
+                        icon="🗑️",
+                    ):
                         try:
                             deleted_count = 0
                             for plan in daily_plans:
                                 response = requests.delete(
-                                    f"{API_BASE_URL}/api/meal-plans/{plan['id']}")
+                                    f"{API_BASE_URL}/api/meal-plans/{plan['id']}"
+                                )
                                 if response.status_code == 200:
                                     deleted_count += 1
 
                             if deleted_count > 0:
                                 st.success(
-                                    f"Deleted {deleted_count} meal(s) for {plan_date}! ✅")
+                                    f"Deleted {deleted_count} meal(s) for {plan_date}! ✅"
+                                )
                                 st.rerun()
                             else:
                                 st.error("Failed to delete meals")
@@ -91,31 +98,46 @@ try:
                     st.divider()
 
                     cols = st.columns(3)
-                    for idx, plan in enumerate(sorted(daily_plans, key=lambda x: ['breakfast', 'lunch', 'dinner'].index(x['meal_type']))):
+                    for idx, plan in enumerate(
+                        sorted(
+                            daily_plans,
+                            key=lambda x: ["breakfast", "lunch", "dinner"].index(
+                                x["meal_type"]
+                            ),
+                        )
+                    ):
                         with cols[idx]:
-                            meal_type = plan['meal_type'].capitalize()
-                            emoji = {"breakfast": "🌅", "lunch": "☀️",
-                                     "dinner": "🌙"}.get(plan['meal_type'], "🍽️")
+                            meal_type = plan["meal_type"].capitalize()
+                            emoji = {
+                                "breakfast": "🌅",
+                                "lunch": "☀️",
+                                "dinner": "🌙",
+                            }.get(plan["meal_type"], "🍽️")
 
                             st.markdown(f"### {emoji} {meal_type}")
 
-                            if plan['eaten_outside']:
+                            if plan["eaten_outside"]:
                                 st.warning("🏪 Eaten Outside")
-                                if st.button(f"Mark as Home Cooked", key=f"home_{plan['id']}"):
+                                if st.button(
+                                    f"Mark as Home Cooked", key=f"home_{plan['id']}"
+                                ):
                                     requests.patch(
                                         f"{API_BASE_URL}/api/meal-plans/{plan['id']}/eaten-outside",
-                                        params={"eaten_outside": False}
+                                        params={"eaten_outside": False},
                                     )
                                     st.rerun()
-                            elif plan['meal_id']:
+                            elif plan["meal_id"]:
                                 meal_response = requests.get(
-                                    f"{API_BASE_URL}/api/meals/{plan['meal_id']}")
+                                    f"{API_BASE_URL}/api/meals/{plan['meal_id']}"
+                                )
                                 if meal_response.status_code == 200:
                                     meal = meal_response.json()
 
                                     st.markdown(f"**{meal['name']}**")
-                                    st.caption(meal['description'])
-                                    st.markdown(f"**Cooking time: {meal['prep_time_minutes']} minutes**")
+                                    st.caption(meal["description"])
+                                    st.markdown(
+                                        f"**Cooking time: {meal['prep_time_minutes']} minutes**"
+                                    )
 
                                     st.markdown("**Nutrition:**")
                                     st.markdown(f"- Protein: {meal['protein']}g")
@@ -125,17 +147,22 @@ try:
                                     st.markdown(f"- Fats: {meal['fats']}g")
 
                                     with st.expander("📝 Ingredients"):
-                                        for ing in meal['ingredients']:
-                                            st.markdown(f"- {ing['quantity']} {ing['unit']} {ing['name']}")
+                                        for ing in meal["ingredients"]:
+                                            st.markdown(
+                                                f"- {ing['quantity']} {ing['unit']} {ing['name']}"
+                                            )
 
-                                    if meal.get('instructions'):
+                                    if meal.get("instructions"):
                                         with st.expander("👨‍🍳 Instructions"):
-                                            st.markdown(meal['instructions'])
+                                            st.markdown(meal["instructions"])
 
-                                    if st.button(f"Mark as Eaten Outside", key=f"outside_{plan['id']}"):
+                                    if st.button(
+                                        f"Mark as Eaten Outside",
+                                        key=f"outside_{plan['id']}",
+                                    ):
                                         requests.patch(
                                             f"{API_BASE_URL}/api/meal-plans/{plan['id']}/eaten-outside",
-                                            params={"eaten_outside": True}
+                                            params={"eaten_outside": True},
                                         )
                                         st.rerun()
                             else:
@@ -161,7 +188,7 @@ with gen_col2:
             try:
                 response = requests.post(
                     f"{API_BASE_URL}/api/meal-plans/generate/{user['id']}",
-                    params={"target_date": str(gen_date)}
+                    params={"target_date": str(gen_date)},
                 )
                 if response.status_code == 200:
                     st.success("✅ Meals generated!")

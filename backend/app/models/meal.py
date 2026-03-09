@@ -14,7 +14,7 @@ class Meal(Base):
     # Nutritional info
     calories = Column(Float)
     protein = Column(Float)  # grams
-    fiber = Column(Float)    # grams
+    fiber = Column(Float)  # grams
     carbs = Column(Float)
     fats = Column(Float)
 
